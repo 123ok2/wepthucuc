@@ -1,0 +1,6 @@
+{
+  "name": "Cổng Thông Tin PTDTBT THCS Thu Cúc",
+  "description": "Cổng thông tin điện tử Trường PTDTBT THCS Thu Cúc, tỉnh Phú Thọ - Kênh thông tin chính thức, cập nhật tin tức giáo dục, văn bản công khai, hoạt động học sinh bán trú và quản lý đăng bài.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
