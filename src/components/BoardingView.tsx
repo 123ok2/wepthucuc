@@ -70,6 +70,9 @@ export const BoardingView: React.FC<BoardingViewProps> = ({
           <img
             src={SCHOOL_INFO.boardingPhoto}
             alt="Học sinh bán trú Thu Cúc"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = '/assets/campus.jpg';
+            }}
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
           />
@@ -283,6 +286,9 @@ export const BoardingView: React.FC<BoardingViewProps> = ({
                     <img
                       src={article.imageUrl}
                       alt={article.title}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = '/assets/campus.jpg';
+                      }}
                       className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-300"
                       referrerPolicy="no-referrer"
                     />

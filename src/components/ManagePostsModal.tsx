@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Search, Trash2, Edit3, Plus, RotateCcw, Pin, Eye, Calendar, User } from 'lucide-react';
+import { X, Search, Trash2, Edit3, Plus, RotateCcw, Pin, Eye, Calendar, User, Link2, Check } from 'lucide-react';
 import { Article } from '../types';
 
 interface ManagePostsModalProps {
@@ -27,8 +27,16 @@ export const ManagePostsModal: React.FC<ManagePostsModalProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const handleCopyPostLink = (art: Article) => {
+    const url = `${window.location.origin}${window.location.pathname}?bai-viet=${art.slug || art.id}`;
+    navigator.clipboard?.writeText(url);
+    setCopiedId(art.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const filteredArticles = articles.filter((a) => {
     const matchesSearch =
@@ -141,6 +149,9 @@ export const ManagePostsModal: React.FC<ManagePostsModalProps> = ({
                         <img
                           src={article.imageUrl}
                           alt={article.title}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = '/assets/campus.jpg';
+                          }}
                           className="w-12 h-10 object-cover rounded-md bg-slate-200 shrink-0"
                           referrerPolicy="no-referrer"
                         />
@@ -151,9 +162,9 @@ export const ManagePostsModal: React.FC<ManagePostsModalProps> = ({
                           >
                             {article.title}
                           </button>
-                          <p className="text-slate-500 line-clamp-1 text-[11px] mt-0.5">
-                            {article.excerpt}
-                          </p>
+                          <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5 font-mono">
+                            <span className="truncate">?bai-viet={article.slug || article.id}</span>
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -180,6 +191,17 @@ export const ManagePostsModal: React.FC<ManagePostsModalProps> = ({
                     </td>
                     <td className="py-3 px-4 text-right whitespace-nowrap">
                       <div className="inline-flex items-center gap-1">
+                        <button
+                          onClick={() => handleCopyPostLink(article)}
+                          title="Sao chép link chia sẻ bài viết"
+                          className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded"
+                        >
+                          {copiedId === article.id ? (
+                            <Check className="w-4 h-4 text-emerald-600" />
+                          ) : (
+                            <Link2 className="w-4 h-4" />
+                          )}
+                        </button>
                         <button
                           onClick={() => onViewArticle(article)}
                           title="Xem bài viết"

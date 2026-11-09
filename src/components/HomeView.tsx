@@ -37,11 +37,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
     (a) => a.category === 'thong-bao' || a.isPinned
   ).slice(0, 4);
 
-  // Latest news (3-5 articles)
-  const latestNews = articles.slice(0, 5);
+  // Featured lead article: pinned article first, or newest published article
+  const leadArticle = articles.find((a) => a.isPinned) || articles[0];
 
-  // Featured lead article
-  const leadArticle = articles.find((a) => a.isFeatured) || articles[0];
+  // Secondary news: Top 4 newest remaining articles
+  const secondaryNews = articles.filter((a) => a.id !== leadArticle?.id).slice(0, 4);
 
   const quickLinks = [
     {
@@ -156,6 +156,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <img
               src={SCHOOL_INFO.collectivePhoto}
               alt="Tập thể Trường PTDTBT THCS Thu Cúc"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = '/assets/campus.jpg';
+              }}
               className="w-full h-full min-h-[380px] lg:min-h-full object-cover"
               referrerPolicy="no-referrer"
             />
@@ -239,6 +242,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <img
                     src={leadArticle.imageUrl}
                     alt={leadArticle.title}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = '/assets/campus.jpg';
+                    }}
                     className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
                     referrerPolicy="no-referrer"
                   />
@@ -270,10 +276,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             {/* Secondary News Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {latestNews
-                .filter((a) => a.id !== leadArticle?.id)
-                .slice(0, 4)
-                .map((art) => (
+              {secondaryNews.map((art) => (
                   <article
                     key={art.id}
                     onClick={() => onSelectArticle(art)}
@@ -284,6 +287,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         <img
                           src={art.imageUrl}
                           alt={art.title}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = '/assets/campus.jpg';
+                          }}
                           className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
                           referrerPolicy="no-referrer"
                         />

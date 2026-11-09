@@ -11,13 +11,13 @@ export const SCHOOL_INFO = {
   welcomeTitle: 'Chào mừng đến với Cổng thông tin điện tử Trường PTDTBT THCS Thu Cúc',
   welcomeMessage:
     'Chào mừng quý thầy cô giáo, quý phụ huynh và các em học sinh đến với Cổng thông tin điện tử Trường PTDTBT THCS Thu Cúc. Website là kênh thông tin chính thức nhằm giới thiệu hoạt động giáo dục, cập nhật thông báo, chia sẻ các hoạt động dạy và học, đồng thời tăng cường kết nối giữa nhà trường, gia đình và xã hội.',
-  collectivePhoto: '/src/assets/images/tap_the_thcs_thu_cuc.jpg',
+  collectivePhoto: '/assets/collective.jpg',
   collectivePhotoCaption:
     'Tập thể cán bộ, giáo viên, nhân viên Trường PTDTBT THCS Thu Cúc trong hoạt động phối hợp với các lực lượng trên địa bàn – xây dựng môi trường giáo dục an toàn, thân thiện và trách nhiệm.',
-  campusPhoto: '/src/assets/images/thu_cuc_school_campus_1794218696951.jpg',
-  boardingPhoto: '/src/assets/images/thu_cuc_boarding_life_1794218697486.jpg',
-  digitalPhoto: '/src/assets/images/thu_cuc_stem_digital_1794218698405.jpg',
-  youthPhoto: '/src/assets/images/thu_cuc_sports_youth_1794218698583.jpg',
+  campusPhoto: '/assets/campus.jpg',
+  boardingPhoto: '/assets/boarding.jpg',
+  digitalPhoto: '/assets/digital.jpg',
+  youthPhoto: '/assets/sports.jpg',
   mission:
     'Tạo dựng môi trường giáo dục thân thiện, kỷ cương và chất lượng để mỗi học sinh đều có cơ hội học tập, phát triển năng lực và tư duy sáng tạo.',
   vision:
@@ -50,7 +50,7 @@ Tại hội nghị, Ban Giám hiệu cùng tổ quản lý bán trú đã báo c
 - Các biện pháp chăm sóc sức khỏe mùa lạnh, phòng chống dịch bệnh vùng cao.
 
 Thầy Hiệu trưởng biểu dương tinh thần trách nhiệm của đội ngũ thầy cô giáo trực bán trú, các nhân viên cấp dưỡng đã tận tâm chăm lo cho học sinh như con em ruột thịt của mình.`,
-    imageUrl: '/src/assets/images/thu_cuc_boarding_life_1794218697486.jpg',
+    imageUrl: '/assets/boarding.jpg',
     imageCaption: 'Bữa cơm trưa ấm cúng và đủ dinh dưỡng của học sinh bán trú tại bếp ăn nhà trường.',
     author: 'Ban Quản Lý Bán Trú',
     authorRole: 'Tổ Quản lý & Nuôi dưỡng',
@@ -73,7 +73,7 @@ Các nội dung trọng tâm đã đạt được:
 2. 100% cán bộ giáo viên sử dụng chữ ký số cá nhân để phê duyệt điểm và nhận xét học bạ.
 3. Tập huấn cho phụ huynh học sinh cài đặt ứng dụng liên lạc điện tử để nhận thông báo và theo dõi học tập của con em mình.
 4. Đảm bảo an toàn thông tin mạng và bảo mật dữ liệu cá nhân của học sinh theo đúng quy định.`,
-    imageUrl: '/src/assets/images/thu_cuc_stem_digital_1794218698405.jpg',
+    imageUrl: '/assets/digital.jpg',
     imageCaption: 'Giáo viên hướng dẫn học sinh thao tác trên hệ thống học liệu và thư viện số.',
     author: 'Tổ Công Nghệ Thông Tin',
     authorRole: 'Ban Chỉ đạo Chuyển đổi số',
@@ -97,7 +97,7 @@ Hơn 400 học sinh các khối lớp đã sôi nổi tranh tài ở các nội 
 - Hội thi văn nghệ với các tiết mục múa khèn, điệu xòe mang đậm bản sắc vùng cao.
 
 Ngày hội không chỉ rèn luyện thể chất mà còn giúp các em học sinh bán trú thêm yêu trường, yêu lớp, yên tâm gắn bó với mái trường thân yêu.`,
-    imageUrl: '/src/assets/images/thu_cuc_sports_youth_1794218698583.jpg',
+    imageUrl: '/assets/sports.jpg',
     imageCaption: 'Không khí sôi nổi, náo nức trong phần thi kéo co của học sinh tại sân trường.',
     author: 'Liên Đội Thiếu Niên Tiền Phong',
     authorRole: 'Tổng phụ trách Đội',
@@ -119,7 +119,7 @@ Nội dung buổi sinh hoạt tập trung vào:
 - Thảo luận về việc xây dựng ma trận, đặc tả đề kiểm tra định kỳ theo định hướng phát triển phẩm chất, năng lực người học.
 - Chia sẻ kinh nghiệm kèm cặp, phụ đạo học sinh bán trú còn gặp khó khăn trong học tập.
 - Ứng dụng công nghệ thông tin và AI hỗ trợ soạn giáo án điện tử sinh động, trực quan.`,
-    imageUrl: '/src/assets/images/thu_cuc_school_campus_1794218696951.jpg',
+    imageUrl: '/assets/campus.jpg',
     imageCaption: 'Khuôn viên nhà trường khang trang trong ngày đón các đoàn bạn về dự hội nghị chuyên môn.',
     author: 'Tổ Chuyên Môn KHTN - KHXH',
     authorRole: 'Tổ trưởng chuyên môn',
@@ -146,7 +146,7 @@ Nội dung công khai bao gồm:
 4. Công khai thu chi tài chính, chế độ chính sách hỗ trợ học sinh bán trú theo Nghị định của Chính phủ.
 
 Các phụ huynh, học sinh và nhân dân có thể tải về toàn văn biểu mẫu công khai tại cổng thông tin điện tử của trường.`,
-    imageUrl: '/src/assets/images/tap_the_thcs_thu_cuc.jpg',
+    imageUrl: '/assets/collective.jpg',
     imageCaption: 'Tập thể sư phạm nhà trường cam kết nâng cao chất lượng giáo dục toàn diện.',
     author: 'Ban Giám Hiệu',
     authorRole: 'Hiệu trưởng',
@@ -171,7 +171,7 @@ Trường PTDTBT THCS Thu Cúc xin thông báo lịch khảo sát và kiểm tra
 - Lịch tự học bán trú: Ban quản lý bán trú tổ chức tự học có thầy cô trực bộ môn từ 19h30 đến 21h30 hằng đêm.
 
 Đề nghị quý phụ huynh phối hợp, theo dõi và động viên con em mình ôn tập đạt kết quả tốt nhất.`,
-    imageUrl: '/src/assets/images/thu_cuc_stem_digital_1794218698405.jpg',
+    imageUrl: '/assets/digital.jpg',
     author: 'Bộ Phận Giáo Vụ',
     publishDate: '2026-11-06',
     views: 615,
@@ -266,29 +266,29 @@ export const GALLERY_ALBUMS: GalleryAlbum[] = [
     id: 'album-1',
     title: 'Tập thể cán bộ giáo viên và các hoạt động phối hợp tại Thu Cúc',
     date: 'Tháng 10/2026',
-    coverImage: '/src/assets/images/tap_the_thcs_thu_cuc.jpg',
+    coverImage: '/assets/collective.jpg',
     images: [
-      { url: '/src/assets/images/tap_the_thcs_thu_cuc.jpg', caption: 'Lễ kỷ niệm và hoạt động phối hợp các lực lượng trên địa bàn xã Thu Cúc' },
-      { url: '/src/assets/images/thu_cuc_school_campus_1794218696951.jpg', caption: 'Quang cảnh sân trường và dãy phòng học khang trang' },
+      { url: '/assets/collective.jpg', caption: 'Lễ kỷ niệm và hoạt động phối hợp các lực lượng trên địa bàn xã Thu Cúc' },
+      { url: '/assets/campus.jpg', caption: 'Quang cảnh sân trường và dãy phòng học khang trang' },
     ],
   },
   {
     id: 'album-2',
     title: 'Đời sống sinh hoạt và bữa cơm bán trú ấm áp tình thầy trò',
     date: 'Năm học 2025 - 2026',
-    coverImage: '/src/assets/images/thu_cuc_boarding_life_1794218697486.jpg',
+    coverImage: '/assets/boarding.jpg',
     images: [
-      { url: '/src/assets/images/thu_cuc_boarding_life_1794218697486.jpg', caption: 'Bữa trưa dinh dưỡng đủ chất của các em học sinh nội trú bán trú' },
-      { url: '/src/assets/images/thu_cuc_sports_youth_1794218698583.jpg', caption: 'Giờ giải lao vui chơi rèn luyện thể chất của học sinh' },
+      { url: '/assets/boarding.jpg', caption: 'Bữa trưa dinh dưỡng đủ chất của các em học sinh nội trú bán trú' },
+      { url: '/assets/sports.jpg', caption: 'Giờ giải lao vui chơi rèn luyện thể chất của học sinh' },
     ],
   },
   {
     id: 'album-3',
     title: 'Học sinh trải nghiệm công nghệ thông tin và chuyển đổi số',
     date: 'Tháng 11/2026',
-    coverImage: '/src/assets/images/thu_cuc_stem_digital_1794218698405.jpg',
+    coverImage: '/assets/digital.jpg',
     images: [
-      { url: '/src/assets/images/thu_cuc_stem_digital_1794218698405.jpg', caption: 'Học sinh tự tin khai thác kho học liệu số và học bạ điện tử' },
+      { url: '/assets/digital.jpg', caption: 'Học sinh tự tin khai thác kho học liệu số và học bạ điện tử' },
     ],
   },
 ];

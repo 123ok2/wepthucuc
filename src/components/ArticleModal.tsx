@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Calendar, User, Printer, Share2, Tag, FileText, Download, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Calendar, User, Printer, Share2, Tag, FileText, Download, Check, Link2, ExternalLink } from 'lucide-react';
 import { Article } from '../types';
 
 interface ArticleModalProps {
@@ -15,14 +15,50 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   onSelectArticle,
   relatedArticles,
 }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showShareBar, setShowShareBar] = useState(false);
 
   if (!article) return null;
 
-  const handleCopyLink = () => {
-    navigator.clipboard?.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}?bai-viet=${article.slug || article.id}`
+    : '';
+
+  const handleCopyLink = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const input = document.createElement('input');
+        input.value = shareUrl;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch (e) {
+      console.warn('Copy failed', e);
+    }
+  };
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: article.title,
+          text: article.excerpt || article.title,
+          url: shareUrl,
+        });
+      } catch (err) {
+        // User canceled or failed, fallback to copy
+        handleCopyLink();
+      }
+    } else {
+      setShowShareBar(!showShareBar);
+      handleCopyLink();
+    }
   };
 
   const handlePrint = () => {
@@ -40,27 +76,73 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={handleCopyLink}
-              title="Chia sẻ liên kết"
-              className="flex items-center gap-1 px-2.5 py-1 text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition-colors"
+              onClick={handleNativeShare}
+              title="Sao chép hoặc chia sẻ liên kết bài viết"
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-all ${
+                copied
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-blue-700'
+              }`}
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Đã sao chép' : 'Chia sẻ'}</span>
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Link2 className="w-3.5 h-3.5 text-blue-600" />}
+              <span>{copied ? 'Đã sao chép link!' : 'Chia sẻ bài viết'}</span>
             </button>
             <button
               onClick={handlePrint}
               title="In bài viết"
-              className="flex items-center gap-1 px-2.5 py-1 text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition-colors"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>In bài</span>
+              <span>In</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors ml-1"
+              className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors ml-1"
             >
               <X className="w-5 h-5" />
             </button>
+          </div>
+        </div>
+
+        {/* Unique Share URL Notice Bar */}
+        <div className="px-6 py-2.5 bg-blue-50/70 border-b border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="font-semibold text-blue-900 shrink-0 flex items-center gap-1">
+              <Link2 className="w-3.5 h-3.5 text-blue-600" />
+              <span>Link bài viết:</span>
+            </span>
+            <input
+              type="text"
+              readOnly
+              value={shareUrl}
+              onClick={(e) => (e.target as HTMLInputElement).select()}
+              className="px-2 py-1 bg-white border border-blue-200 rounded text-slate-600 text-[11px] font-mono truncate w-full sm:w-80 cursor-pointer"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleCopyLink}
+              className="px-2.5 py-1 bg-blue-700 hover:bg-blue-800 text-white font-medium rounded text-[11px] transition-colors"
+            >
+              {copied ? '✓ Đã sao chép' : 'Sao chép link'}
+            </button>
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-[11px] font-medium transition-colors"
+            >
+              Facebook
+            </a>
+            <a
+              href={`https://zalo.me/share?url=${encodeURIComponent(shareUrl)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded text-[11px] font-medium transition-colors"
+            >
+              Zalo
+            </a>
           </div>
         </div>
 
@@ -121,12 +203,15 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
             </div>
           )}
 
-          {/* Featured Image */}
+          {/* Featured Image with Error Fallback */}
           {article.imageUrl && (
             <div className="my-6 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
               <img
                 src={article.imageUrl}
                 alt={article.title}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/assets/campus.jpg';
+                }}
                 className="w-full max-h-[420px] object-cover"
                 referrerPolicy="no-referrer"
               />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Image, Upload, FileText, CheckCircle2, Eye, PenLine, Sparkles } from 'lucide-react';
+import { X, ImageIcon, Upload, FileText, CheckCircle2, Eye, PenLine, Sparkles } from 'lucide-react';
 import { Article, CategoryType } from '../types';
 
 interface CreatePostModalProps {
@@ -19,12 +19,52 @@ const CATEGORIES: { id: CategoryType; name: string }[] = [
 ];
 
 const PRESET_IMAGES = [
-  { label: 'Tập thể cán bộ giáo viên', url: '/src/assets/images/tap_the_thcs_thu_cuc.jpg' },
-  { label: 'Khuôn viên nhà trường', url: '/src/assets/images/thu_cuc_school_campus_1794218696951.jpg' },
-  { label: 'Học sinh bán trú ăn trưa', url: '/src/assets/images/thu_cuc_boarding_life_1794218697486.jpg' },
-  { label: 'Phòng máy tính & chuyển đổi số', url: '/src/assets/images/thu_cuc_stem_digital_1794218698405.jpg' },
-  { label: 'Hoạt động thể thao Đoàn Đội', url: '/src/assets/images/thu_cuc_sports_youth_1794218698583.jpg' },
+  { label: 'Tập thể cán bộ giáo viên', url: '/assets/collective.jpg' },
+  { label: 'Khuôn viên nhà trường', url: '/assets/campus.jpg' },
+  { label: 'Học sinh bán trú ăn trưa', url: '/assets/boarding.jpg' },
+  { label: 'Phòng máy tính & chuyển đổi số', url: '/assets/digital.jpg' },
+  { label: 'Hoạt động thể thao Đoàn Đội', url: '/assets/sports.jpg' },
 ];
+
+// Helper to compress and resize image via canvas to stay well under 200KB
+const compressImageFile = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new window.Image();
+      img.src = e.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1200;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(img.src);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        // Compressed JPEG at 0.8 quality keeps file under 150KB for fast cloud sync
+        const compressed = canvas.toDataURL('image/jpeg', 0.8);
+        resolve(compressed);
+      };
+      img.onerror = () => reject(new Error('Không thể xử lý ảnh này'));
+    };
+    reader.onerror = () => reject(new Error('Lỗi khi đọc file ảnh'));
+  });
+};
 
 export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   isOpen,
@@ -57,23 +97,27 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [previewMode, setPreviewMode] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 3 * 1024 * 1024) {
-        setErrorMsg('Dung lượng ảnh tối đa 3MB');
+      if (!file.type.startsWith('image/')) {
+        setErrorMsg('Vui lòng chọn tệp hình ảnh (JPG, PNG, WebP).');
         return;
       }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setImageUrl(event.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+      setIsCompressing(true);
+      setErrorMsg('');
+      try {
+        const compressedBase64 = await compressImageFile(file);
+        setImageUrl(compressedBase64);
+      } catch (err: any) {
+        setErrorMsg('Không thể xử lý ảnh: ' + (err.message || 'Lỗi đọc tệp'));
+      } finally {
+        setIsCompressing(false);
+      }
     }
   };
 
@@ -405,11 +449,16 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                     </span>
                     <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl p-4 cursor-pointer hover:bg-slate-100/80 transition-colors">
                       <Upload className="w-6 h-6 text-slate-400 mb-1" />
-                      <span className="text-xs text-slate-600 font-medium">Chọn ảnh để tải lên</span>
-                      <span className="text-[10px] text-slate-400">Hỗ trợ JPG, PNG (tối đa 3MB)</span>
+                      <span className="text-xs text-slate-700 font-medium">
+                        {isCompressing ? 'Đang nén và tối ưu hóa ảnh...' : 'Chọn ảnh để tải lên'}
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        Hỗ trợ JPG, PNG, WebP (Tự động nén chuẩn để lưu đám mây)
+                      </span>
                       <input
                         type="file"
                         accept="image/*"
+                        disabled={isCompressing}
                         onChange={handleImageFileUpload}
                         className="hidden"
                       />

@@ -153,6 +153,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             <div className="flex-grow border-t border-slate-200"></div>
           </div>
 
+          {/* Quick-fill sample credentials for immediate testing */}
+          <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between text-[11px]">
+            <div className="text-slate-600">
+              <span className="font-semibold text-slate-800">Tài khoản Admin sẵn có:</span>
+              <div className="font-mono text-slate-500 text-[10px]">admin_test@thucuc.edu.vn</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin_test@thucuc.edu.vn');
+                setPassword('Thucuc@2026!');
+                setIsRegisterMode(false);
+              }}
+              className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold rounded text-[11px] transition-colors"
+            >
+              Điền nhanh
+            </button>
+          </div>
+
           {/* Email / Password Form */}
           <form onSubmit={handleEmailAuth} className="space-y-3.5">
             <div>

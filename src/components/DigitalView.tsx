@@ -99,6 +99,9 @@ export const DigitalView: React.FC<DigitalViewProps> = ({
           <img
             src={SCHOOL_INFO.digitalPhoto}
             alt="Học sinh thực hành phòng máy"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = '/assets/campus.jpg';
+            }}
             className="w-full h-full object-cover max-h-72"
             referrerPolicy="no-referrer"
           />
@@ -208,6 +211,9 @@ export const DigitalView: React.FC<DigitalViewProps> = ({
                     <img
                       src={article.imageUrl}
                       alt={article.title}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = '/assets/campus.jpg';
+                      }}
                       className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-300"
                       referrerPolicy="no-referrer"
                     />

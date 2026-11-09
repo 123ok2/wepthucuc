@@ -123,6 +123,9 @@ export const NewsEventsView: React.FC<NewsEventsViewProps> = ({
                   <img
                     src={article.imageUrl}
                     alt={article.title}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = '/assets/campus.jpg';
+                    }}
                     className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-300"
                     referrerPolicy="no-referrer"
                   />

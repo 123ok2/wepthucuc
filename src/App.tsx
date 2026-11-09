@@ -47,6 +47,59 @@ export default function App() {
   const [manageModalOpen, setManageModalOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
 
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncToast, setSyncToast] = useState<string | null>(null);
+
+  // Helper to safely sort articles (pinned first, then newest publishDate/timestamp first)
+  const sortArticlesList = (list: Article[]): Article[] => {
+    return [...list].sort((a, b) => {
+      const pinnedA = Boolean(a.isPinned);
+      const pinnedB = Boolean(b.isPinned);
+      if (pinnedA && !pinnedB) return -1;
+      if (!pinnedA && pinnedB) return 1;
+      const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
+      const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
+      const diff = (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA);
+      if (diff !== 0) return diff;
+      return b.id.localeCompare(a.id);
+    });
+  };
+
+  // Direct active fetch from Firestore
+  const syncFromFirestore = async (showToast = false) => {
+    setIsSyncing(true);
+    try {
+      const q = collection(db, 'articles');
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const remoteArticles: Article[] = [];
+        snap.forEach((docItem) => {
+          const data = docItem.data() as Article;
+          remoteArticles.push({ ...data, id: data.id || docItem.id });
+        });
+        if (remoteArticles.length > 0) {
+          const sorted = sortArticlesList(remoteArticles);
+          setArticles(sorted);
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted));
+          } catch (e) {}
+          if (showToast) {
+            setSyncToast(`Đã đồng bộ ${sorted.length} bài viết từ cơ sở dữ liệu Firebase!`);
+            setTimeout(() => setSyncToast(null), 3000);
+          }
+        }
+      }
+    } catch (err: any) {
+      console.warn('Firestore getDocs fetch:', err?.message || err);
+      if (showToast) {
+        setSyncToast('Lỗi khi tải từ Firebase: ' + (err.message || 'Thử lại sau'));
+        setTimeout(() => setSyncToast(null), 3000);
+      }
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // Listen to Firebase Auth state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -55,8 +108,12 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Real-time sync with Firebase Cloud Firestore
+  // Sync on mount and subscribe to Firestore real-time onSnapshot
   useEffect(() => {
+    // 1. Immediately fetch fresh data from Firestore
+    syncFromFirestore(false);
+
+    // 2. Real-time live listener for background updates
     let unsubscribeSnapshot: (() => void) | null = null;
     try {
       const q = collection(db, 'articles');
@@ -66,16 +123,15 @@ export default function App() {
           if (!snap.empty) {
             const remoteArticles: Article[] = [];
             snap.forEach((docItem) => {
-              remoteArticles.push(docItem.data() as Article);
+              const data = docItem.data() as Article;
+              remoteArticles.push({ ...data, id: data.id || docItem.id });
             });
             if (remoteArticles.length > 0) {
-              // Sort by publishDate descending
-              remoteArticles.sort((a, b) => {
-                if (a.isPinned && !b.isPinned) return -1;
-                if (!a.isPinned && b.isPinned) return 1;
-                return new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime();
-              });
-              setArticles(remoteArticles);
+              const sorted = sortArticlesList(remoteArticles);
+              setArticles(sorted);
+              try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted));
+              } catch (e) {}
             }
           }
         },
@@ -92,6 +148,30 @@ export default function App() {
     };
   }, []);
 
+  // Check URL on mount and on popstate to open shared article link (?bai-viet=... or ?id=...)
+  useEffect(() => {
+    const handleUrlRoute = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const articleParam = params.get('bai-viet') || params.get('article') || params.get('id');
+        if (articleParam) {
+          const found = articles.find(
+            (a) => a.slug === articleParam || a.id === articleParam
+          );
+          if (found) {
+            setActiveArticle(found);
+          }
+        }
+      } catch (err) {
+        console.warn('URL route check error:', err);
+      }
+    };
+
+    handleUrlRoute();
+    window.addEventListener('popstate', handleUrlRoute);
+    return () => window.removeEventListener('popstate', handleUrlRoute);
+  }, [articles]);
+
   // Sync articles to localStorage as persistent local cache
   useEffect(() => {
     try {
@@ -104,6 +184,31 @@ export default function App() {
   const handleTabChange = (tab: NavTab) => {
     setCurrentTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectArticle = (article: Article) => {
+    setActiveArticle(article);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('bai-viet', article.slug || article.id);
+      window.history.pushState({}, '', url.toString());
+    } catch (e) {
+      console.warn('Failed to update URL search param', e);
+    }
+  };
+
+  const handleCloseArticle = () => {
+    setActiveArticle(null);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('bai-viet');
+      url.searchParams.delete('article');
+      url.searchParams.delete('id');
+      const cleanPath = url.pathname + (url.search ? url.search : '');
+      window.history.pushState({}, '', cleanPath);
+    } catch (e) {
+      console.warn('Failed to clean URL search param', e);
+    }
   };
 
   const handleAttemptCreatePost = () => {
@@ -148,12 +253,14 @@ export default function App() {
         prev.map((art) => (art.id === editingArticle.id ? updated : art))
       );
       setEditingArticle(null);
+      handleSelectArticle(updated);
 
-      // Persist to Firestore if available
+      // Persist to Firestore
       try {
         await setDoc(doc(db, 'articles', updated.id), updated);
-      } catch (e) {
-        console.warn('Firestore write warning:', e);
+        console.info('Đã cập nhật bài viết thành công trên Firestore:', updated.id);
+      } catch (e: any) {
+        console.error('Lỗi lưu Firestore:', e.message || e);
       }
     } else {
       const newPost: Article = {
@@ -163,11 +270,15 @@ export default function App() {
       };
       setArticles((prev) => [newPost, ...prev]);
 
-      // Persist to Firestore if available
+      // Immediately display the newly published post with its shareable link
+      handleSelectArticle(newPost);
+
+      // Persist to Firestore
       try {
         await setDoc(doc(db, 'articles', newPost.id), newPost);
-      } catch (e) {
-        console.warn('Firestore write warning:', e);
+        console.info('Đã lưu bài viết mới thành công trên Firestore:', newPost.id);
+      } catch (e: any) {
+        console.error('Lỗi lưu Firestore:', e.message || e);
       }
     }
   };
@@ -180,13 +291,14 @@ export default function App() {
 
     setArticles((prev) => prev.filter((a) => a.id !== id));
     if (activeArticle?.id === id) {
-      setActiveArticle(null);
+      handleCloseArticle();
     }
 
     try {
       await deleteDoc(doc(db, 'articles', id));
-    } catch (e) {
-      console.warn('Firestore delete warning:', e);
+      console.info('Đã xóa bài viết trên Firestore:', id);
+    } catch (e: any) {
+      console.error('Lỗi xóa Firestore:', e.message || e);
     }
   };
 
@@ -234,6 +346,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 font-sans selection:bg-blue-600 selection:text-white">
+      {/* Toast Notification */}
+      {syncToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 border border-slate-700 animate-fade-in">
+          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>{syncToast}</span>
+        </div>
+      )}
+
       {/* Top Header */}
       <Header
         currentTab={currentTab}
@@ -244,6 +364,8 @@ export default function App() {
         currentUser={currentUser}
         onOpenAuthModal={() => setAuthModalOpen(true)}
         onLogout={handleLogout}
+        onSyncFirestore={() => syncFromFirestore(true)}
+        isSyncing={isSyncing}
       />
 
       {/* Main Content Body */}
@@ -251,7 +373,7 @@ export default function App() {
         {currentTab === 'trang-chu' && (
           <HomeView
             articles={articles}
-            onSelectArticle={setActiveArticle}
+            onSelectArticle={handleSelectArticle}
             onNavigateTab={handleTabChange}
             onOpenCreatePost={handleAttemptCreatePost}
           />
@@ -262,7 +384,7 @@ export default function App() {
         {currentTab === 'tin-tuc' && (
           <NewsEventsView
             articles={articles}
-            onSelectArticle={setActiveArticle}
+            onSelectArticle={handleSelectArticle}
             onOpenCreatePost={handleAttemptCreatePost}
           />
         )}
@@ -270,7 +392,7 @@ export default function App() {
         {currentTab === 'ban-tru' && (
           <BoardingView
             articles={articles}
-            onSelectArticle={setActiveArticle}
+            onSelectArticle={handleSelectArticle}
             onOpenCreatePost={handleAttemptCreatePost}
           />
         )}
@@ -278,7 +400,7 @@ export default function App() {
         {currentTab === 'van-ban' && (
           <DocumentsView
             articles={articles}
-            onSelectArticle={setActiveArticle}
+            onSelectArticle={handleSelectArticle}
             onOpenCreatePost={handleAttemptCreatePost}
           />
         )}
@@ -286,7 +408,7 @@ export default function App() {
         {currentTab === 'chuyen-mon' && (
           <AcademicView
             articles={articles}
-            onSelectArticle={setActiveArticle}
+            onSelectArticle={handleSelectArticle}
             onOpenCreatePost={handleAttemptCreatePost}
           />
         )}
@@ -294,7 +416,7 @@ export default function App() {
         {currentTab === 'chuyen-doi-so' && (
           <DigitalView
             articles={articles}
-            onSelectArticle={setActiveArticle}
+            onSelectArticle={handleSelectArticle}
             onOpenCreatePost={handleAttemptCreatePost}
           />
         )}
@@ -310,11 +432,11 @@ export default function App() {
         onOpenManagePosts={handleAttemptManagePosts}
       />
 
-      {/* Article Reader Modal */}
+      {/* Article Reader Modal with deep-linking & unique share link */}
       <ArticleModal
         article={activeArticle}
-        onClose={() => setActiveArticle(null)}
-        onSelectArticle={setActiveArticle}
+        onClose={handleCloseArticle}
+        onSelectArticle={handleSelectArticle}
         relatedArticles={relatedArticles}
       />
 
@@ -342,7 +464,7 @@ export default function App() {
           setCreateModalOpen(true);
         }}
         onResetDefaults={handleResetDefaults}
-        onViewArticle={setActiveArticle}
+        onViewArticle={handleSelectArticle}
       />
 
       {/* Auth Modal for Admin Login */}

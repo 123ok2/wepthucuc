@@ -34,7 +34,10 @@ export const firebaseConfig = {
 // Initialize Firebase app safely
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Official database ID provisioned in Firebase Console for gen-lang-client-0028772304
+export const FIRESTORE_DATABASE_ID = 'ai-studio-5fa09c15-ed58-4c8c-8b0d-0956f932b2b7';
+export const db = getFirestore(app, FIRESTORE_DATABASE_ID);
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({

@@ -40,6 +40,9 @@ export const AboutView: React.FC = () => {
           <img
             src={SCHOOL_INFO.collectivePhoto}
             alt="Tập thể Trường PTDTBT THCS Thu Cúc"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = '/assets/campus.jpg';
+            }}
             className="w-full h-full object-cover max-h-[540px]"
             referrerPolicy="no-referrer"
           />

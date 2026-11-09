@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavTab } from '../types';
-import { PenLine, Settings, Menu, X, ChevronDown, Mail, Phone, BookOpen, ShieldCheck, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { PenLine, Settings, Menu, X, ChevronDown, Mail, Phone, BookOpen, ShieldCheck, LogIn, LogOut, User as UserIcon, RotateCw } from 'lucide-react';
 import { SCHOOL_INFO } from '../data/initialData';
 import { User } from 'firebase/auth';
 
@@ -13,6 +13,8 @@ interface HeaderProps {
   currentUser: User | null;
   onOpenAuthModal: () => void;
   onLogout: () => void;
+  onSyncFirestore?: () => void;
+  isSyncing?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -24,6 +26,8 @@ export const Header: React.FC<HeaderProps> = ({
   currentUser,
   onOpenAuthModal,
   onLogout,
+  onSyncFirestore,
+  isSyncing = false,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -68,6 +72,18 @@ export const Header: React.FC<HeaderProps> = ({
               <Phone className="w-3 h-3 text-blue-300" />
               <span>{SCHOOL_INFO.phone}</span>
             </span>
+            <span aria-hidden="true">·</span>
+
+            {onSyncFirestore && (
+              <button
+                onClick={onSyncFirestore}
+                title="Đồng bộ dữ liệu trực tiếp từ Firebase Cloud Firestore"
+                className="hover:text-cyan-300 transition-colors flex items-center gap-1 font-medium text-slate-300 text-[11px]"
+              >
+                <RotateCw className={`w-3 h-3 ${isSyncing ? 'animate-spin text-cyan-400' : ''}`} />
+                <span className="hidden sm:inline">{isSyncing ? 'Đang đồng bộ...' : `Cloud (${articleCount})`}</span>
+              </button>
+            )}
             <span aria-hidden="true">·</span>
 
             {/* Admin status in top bar */}
